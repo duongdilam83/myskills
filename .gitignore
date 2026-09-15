@@ -1,0 +1,11 @@
+# Credentials & secrets
+service_account.json
+*.key
+*.pem
+credentials.json
+token.json
+*secret*
+
+# Temporary files
+scratch/
+*.log
