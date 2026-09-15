@@ -1,0 +1,7 @@
+﻿{
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "sender_email": "thaytoan.mathplus@gmail.com",
+  "sender_password": "xxxx xxxx xxxx xxxx",
+  "sender_display_name": "Thầy giáo Toán - MathPlus"
+}

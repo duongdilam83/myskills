@@ -4,6 +4,9 @@ service_account.json
 *.pem
 credentials.json
 token.json
+email_config.json
+*email*.json
+!*example*.json
 *secret*
 
 # Temporary files
