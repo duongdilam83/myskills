@@ -24,10 +24,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 import re
 import json
 import base64
+import random
 import smtplib
 import argparse
 import hashlib
 import subprocess
+
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Dict, Any, Optional, Tuple
@@ -107,115 +109,179 @@ def get_worksheet(client: gspread.Client, spreadsheet_id: str, gid: Optional[int
                 return ws
     return sheet.sheet1
 
-# ==================== BỘ SINH NHẬN XÉT SƯ PHẠM MATHPLUS ====================
+# ==================== BỘ SINH NHẬN XÉT SƯ PHẠM MATHPLUS (3 GẠCH ĐẦU DÒNG) ====================
 
 REMARK_POOLS = {
-    "excellent": { # 9.5 - 10.0
+    "excellent": { # 9.25 - 10.0
         "prep": [
-            "- Bài làm chuẩn mực, thể hiện tinh thần tự học và chuẩn bị bài rất chu đáo.",
             "- Con hoàn thành xuất sắc toàn bộ bài tập về nhà được giao, nộp bài đúng hạn.",
-            "- Ý thức tự giác học tập rất cao, bài vở chỉn chu và cẩn thận."
+            "- Bài tập về nhà được chuẩn bị rất chu đáo, bài vở chỉn chu, sạch đẹp.",
+            "- Ý thức tự giác làm bài tập rất cao, hoàn thành trọn vẹn cả các câu hỏi nâng cao.",
+            "- Bài làm thể hiện tinh thần tự học tuyệt vời và thái độ học tập rất nghiêm túc của con.",
+            "- Nộp bài đúng giờ, các bài tập được làm cẩn thận, trình bày chuẩn mực.",
+            "- Con hoàn thành phiếu bài tập với chất lượng vượt trội, lời giải rõ ràng.",
+            "- Tinh thần tự giác học tập rất đáng khen ngợi, con luôn chuẩn bị bài đầy đủ.",
+            "- Bài làm xuất sắc, thể hiện sự đầu tư thời gian và trách nhiệm cao với môn học.",
+            "- Con làm bài tập về nhà đầy đủ và nộp bài rất đúng hạn, trình bày khoa học.",
+            "- Rất biểu dương ý thức chủ động và tinh thần say mê học toán của con tuần này."
         ],
         "comprehension": [
             "- Khả năng tiếp thu bài vượt trội, nắm bắt bản chất các dạng toán rất nhanh và sâu sắc.",
             "- Tư duy logic nhạy bén, phương pháp giải toán linh hoạt và trình bày mạch lạc.",
-            "- Con nắm chắc phương pháp giải các bài toán nâng cao và vận dụng rất hiệu quả."
+            "- Con nắm rất chắc kiến thức trọng tâm, tính toán chính xác và tốc độ làm bài nhanh.",
+            "- Kỹ năng phân tích đề bài và giải quyết bài toán nâng cao rất thành thạo.",
+            "- Con có tư duy toán học sắc sảo, tìm ra hướng giải tối ưu và suy luận chặt chẽ.",
+            "- Vận dụng lý thuyết vào thực hành rất tự tin, các bước biến đổi đều chuẩn xác.",
+            "- Khả năng tư duy độc lập và suy luận logic của con rất tốt, không mắc lỗi sơ đẳng.",
+            "- Nắm vững toàn bộ phương pháp giải các dạng toán khó, bài làm rất thuyết phục.",
+            "- Tiếp thu bài mới rất nhanh nhạy, kỹ năng tính toán chuẩn xác tuyệt đối.",
+            "- Con hiểu sâu bản chất toán học, các bước lập luận rõ ràng và gãy gọn."
         ],
-        "advice": [
-            "- Tiếp tục rèn luyện thêm các dạng bài toán mở rộng và tư duy sâu để bứt phá.",
-            "- Nên duy trì thói quen đào sâu suy nghĩ tìm nhiều cách giải khác nhau cho một bài toán.",
-            "- Giữ vững sự cẩn trọng và kiểm tra kỹ từng bước biến đổi."
-        ],
-        "encourage": [
-            "- Xuất sắc! Thầy cô rất tự hào về tinh thần học tập và năng lực toán học của con.",
-            "- Thầy tin con sẽ luôn là tấm gương học tập xuất sắc của lớp!",
-            "- Tiếp tục phát huy niềm say mê với môn Toán con nhé!"
+        "conclusion": [
+            "- Xuất sắc! Thầy cô rất tự hào và tin con sẽ luôn là tấm gương học tập tiêu biểu của lớp.",
+            "- Tiếp tục phát huy niềm say mê với môn Toán và thử sức thêm nhiều bài toán mở rộng con nhé!",
+            "- Con hãy giữ vững phong độ này, rèn thêm thói quen tìm nhiều cách giải sáng tạo khác nhau.",
+            "- Thầy khen ngợi kết quả tuyệt vời này, chúc con tiếp tục gặt hái thêm nhiều điểm 10 ở các buổi tới!",
+            "- Duy trì sự cẩn trọng và niềm yêu thích môn học để ngày càng tiến xa hơn nữa con nhé!",
+            "- Kết quả rất xứng đáng với nỗ lực của con, chúc mừng con và gia đình!",
+            "- Hãy tiếp tục giữ vững sự tự tin và đam mê học toán, con có tiềm năng rất lớn!",
+            "- Thầy cô rất ấn tượng với bài làm này, con tiếp tục bứt phá ở các bài học tiếp theo nhé!",
+            "- Tuyệt vời! Giữ vững sự tập trung và phong độ xuất sắc này con nhé.",
+            "- Thành tích học tập rất đáng nể, chúc con luôn tỏa sáng trong mỗi buổi học!"
         ]
     },
     "very_good": { # 8.0 - 9.0
         "prep": [
-            "- Con nộp bài đúng hạn và hoàn thành đầy đủ bài tập được giao.",
-            "- Bài tập về nhà được hoàn thành rất tốt, chất lượng bài làm cao.",
-            "- Con có ý thức tự giác làm bài tập về nhà rất tốt, trình bày sạch đẹp."
+            "- Con có ý thức tự giác làm bài tập về nhà rất tốt, nộp bài đúng hạn.",
+            "- Bài tập về nhà được hoàn thành chu đáo, trình bày sạch sẽ và rõ ràng.",
+            "- Tinh thần học tập đáng khen ngợi, con hoàn thành đầy đủ các bài tập được giao.",
+            "- Con chuẩn bị bài nghiêm túc, có trách nhiệm cao với phiếu bài tập về nhà.",
+            "- Vở bài tập sạch sẽ, chữ viết rõ ràng, các bước giải được ghi chép cẩn thận.",
+            "- Con nộp bài đúng hẹn, giải quyết tốt hầu hết các câu hỏi trong phiếu.",
+            "- Ý thức học tập tốt, luôn nỗ lực hoàn thành đầy đủ bài tập thầy cô giao.",
+            "- Rất biểu dương thái độ học tập chủ động và tinh thần chăm chỉ của con tuần này.",
+            "- Con hoàn thành phiếu bài tập với kết quả tốt, có ý thức tự rèn luyện ở nhà.",
+            "- Bài làm chỉn chu, con có trách nhiệm và nỗ lực hoàn thành phiếu bài tập."
         ],
         "comprehension": [
-            "- Con hiểu bài rất nhanh và nắm chắc các dạng bài từ cơ bản đến nâng cao.",
-            "- Tư duy toán học sắc sảo, tìm ra hướng giải bài toán một cách nhanh chóng.",
-            "- Kỹ năng tính toán tốt, các bước biến đổi rõ ràng, dễ hiểu."
+            "- Con hiểu bài nhanh, nắm chắc phương pháp giải các dạng toán từ cơ bản đến nâng cao.",
+            "- Tư duy toán học tốt, tính toán cẩn thận và các bước giải tương đối mạch lạc.",
+            "- Đã vận dụng linh hoạt công thức và phương pháp thầy cô hướng dẫn trên lớp.",
+            "- Nắm vững kiến thức trọng tâm buổi học, kỹ năng giải toán tiến bộ rõ rệt.",
+            "- Tiếp thu bài tốt, các bài toán cơ bản đều làm rất chuẩn xác.",
+            "- Kỹ năng tính toán tốt, các bước biến đổi rõ ràng, tuy nhiên cần chú ý thêm ở bài khó.",
+            "- Tư duy nhanh nhạy, hiểu bài tốt nhưng đôi chỗ tính toán còn cần kiểm tra kỹ hơn.",
+            "- Con nắm chắc các bước giải toán, phân tích đề bài tốt và lập luận tương đối chặt chẽ.",
+            "- Khả năng làm bài độc lập tốt, vận dụng kiến thức khá vững vàng.",
+            "- Con hiểu sâu bài học, trình bày bài giải sạch đẹp, dễ theo dõi."
         ],
-        "advice": [
-            "- Nên kiểm tra lại từng dòng biến đổi trước khi kết luận đáp số để đạt điểm tuyệt đối.",
-            "- Tránh tâm lý chủ quan ở các câu hỏi dễ để không mất điểm đáng tiếc.",
-            "- Con hiểu bài nhưng cần cẩn thận hơn một chút trong tính toán để tránh nhầm lẫn số học."
-        ],
-        "encourage": [
-            "- Bài làm rất tốt, thầy tin con sẽ sớm đạt điểm tối đa ở các bài tiếp theo!",
-            "- Tiếp tục phát huy phong độ và sự tự tin này con nhé!",
-            "- Chúc mừng con với kết quả học tập rất ấn tượng ở buổi học này."
+        "conclusion": [
+            "- Bài làm rất tốt, con chỉ cần cẩn thận hơn trong phép tính là sẽ đạt điểm tuyệt đối!",
+            "- Tiếp tục phát huy phong độ và sự tự tin này, thầy tin con sẽ sớm đạt điểm tối đa ở bài sau.",
+            "- Tránh tâm lý chủ quan ở các câu hỏi quen thuộc để không bị mất điểm đáng tiếc con nhé.",
+            "- Chúc mừng con với kết quả học tập rất ấn tượng, hãy tiếp tục duy trì sự chăm chỉ này!",
+            "- Con có tư duy tốt, hãy dành thêm chút thời gian rà soát lại kết quả trước khi nộp bài.",
+            "- Thầy cô rất khen ngợi sự tiến bộ của con, nỗ lực thêm một chút nữa để bứt phá nhé!",
+            "- Kết quả rất tích cực, con hãy tự tin rèn luyện thêm các câu hỏi nâng cao để tiến bộ hơn nữa.",
+            "- Rất đáng khen! Chúc con luôn giữ vững phong độ và niềm say mê với môn Toán.",
+            "- Con làm bài rất tốt, hãy tiếp tục phát huy và chinh phục những mục tiêu cao hơn nhé!",
+            "- Thầy tin với tinh thần này, con hoàn toàn có thể chạm mốc điểm xuất sắc ở bài tới!"
         ]
     },
     "good": { # 7.0 - 7.5
         "prep": [
-            "- Con có ý thức làm bài tập về nhà và nộp bài đầy đủ.",
-            "- Đã cố gắng hoàn thành các câu hỏi trong phiếu bài tập được giao.",
-            "- Vở ghi và bài làm tương đối rõ ràng, có trách nhiệm với việc học."
+            "- Con có ý thức làm bài tập về nhà và nộp bài đầy đủ theo yêu cầu.",
+            "- Đã nỗ lực hoàn thành các bài tập trong phiếu, bài vở tương đối đầy đủ.",
+            "- Tinh thần học tập nghiêm túc, có trách nhiệm với nhiệm vụ thầy cô giao.",
+            "- Con chuẩn bị bài khá tốt, cần chú ý trình bày các bước giải rõ ràng hơn.",
+            "- Vở bài tập ghi chép cẩn thận, đã làm được hầu hết các câu hỏi cơ bản.",
+            "- Ý thức tự giác làm bài tốt, cần rèn thêm tính kiên nhẫn với các bài tập dài.",
+            "- Đã có cố gắng hoàn thành bài về nhà, thái độ học tập có chuyển biến tích cực.",
+            "- Con nộp bài đúng hạn, đã hoàn thành phần lớn các bài tập được giao.",
+            "- Ý thức làm bài tương đối tốt, cần duy trì sự tập trung đều đặn hơn.",
+            "- Con có trách nhiệm với việc học, hoàn thành bài tập cơ bản ở nhà."
         ],
         "comprehension": [
             "- Con nắm được kiến thức trọng tâm và làm tốt các bài tập cơ bản.",
-            "- Có nền tảng tư duy tốt, tuy nhiên ở các bài toán nâng cao còn đôi chút lúng túng.",
-            "- Đã vận dụng được công thức và phương pháp thầy cô hướng dẫn trên lớp."
+            "- Có nền tảng tư duy khá tốt, tuy nhiên ở các bài toán nâng cao còn đôi chút lúng túng.",
+            "- Đã vận dụng được công thức và phương pháp thầy cô hướng dẫn trên lớp.",
+            "- Khả năng tiếp thu khá nhanh, nhưng kỹ năng tính toán đôi lúc còn nhầm lẫn số học.",
+            "- Con giải tốt các dạng bài quen thuộc, với bài toán mới cần đọc kỹ đề hơn.",
+            "- Nắm được lý thuyết nền tảng, cần rèn luyện thêm kỹ năng phân tích đề bài có lời văn.",
+            "- Tư duy toán khá nhanh nhẹn, nhưng cần rèn thêm sự cẩn thận và chắc chắn trong từng bước.",
+            "- Con hiểu bài trên lớp, cần chú ý các bước biến đổi trung gian để không mất điểm.",
+            "- Tiếp thu bài ở mức khá, cần củng cố thêm các bước giải ở dạng bài suy luận.",
+            "- Con nắm được hướng giải quyết bài toán nhưng thao tác tính toán còn cần rèn luyện thêm."
         ],
-        "advice": [
-            "- Cần đọc kỹ đề bài hơn, chú ý điều kiện xác định và các bước suy luận trung gian.",
-            "- Nên dành thêm thời gian kiểm tra lại kết quả tính toán trước khi nộp bài.",
-            "- Rà soát lại những câu còn sai để hiểu rõ nguyên nhân và rút kinh nghiệm."
-        ],
-        "encourage": [
-            "- Con có nhiều tiềm năng, chỉ cần cẩn thận hơn chắc chắn điểm số sẽ bứt phá!",
-            "- Cố gắng rèn luyện thêm mỗi ngày con nhé, thầy cô luôn sẵn sàng hỗ trợ con.",
-            "- Hãy tự tin hơn trong các bài toán mới, con hoàn toàn có thể làm tốt hơn nữa!"
+        "conclusion": [
+            "- Con nên dành thêm thời gian kiểm tra lại kết quả trước khi nộp bài để đạt điểm cao hơn.",
+            "- Cố gắng rà soát lại các lỗi sai để rút kinh nghiệm, thầy cô luôn sẵn sàng hỗ trợ con.",
+            "- Con có nhiều tiềm năng, chỉ cần cẩn thận hơn chắc chắn điểm số sẽ bứt phá rõ rệt!",
+            "- Hãy tự tin hơn khi gặp bài toán mới và chủ động hỏi lại thầy cô phần chưa hiểu con nhé.",
+            "- Kiên trì rèn luyện thêm mỗi ngày, thầy tin con hoàn toàn có thể đạt điểm giỏi ở bài tiếp theo!",
+            "- Chúc mừng con đã hoàn thành bài tập, hãy cố gắng phát huy và nỗ lực nhiều hơn nữa nhé!",
+            "- Chỉ cần tập trung cao độ và cẩn trọng hơn trong tính toán, kết quả của con sẽ tốt hơn rất nhiều.",
+            "- Đừng ngần ngại thử sức với các bài toán khó hơn con nhé, cố gắng lên nào!",
+            "- Hãy duy trì thói quen làm bài đều đặn, thầy cô tin con sẽ tiến bộ nhanh chóng.",
+            "- Kết quả khá tốt, con hãy tiếp tục nỗ lực để đạt thành tích cao hơn ở buổi học tới nhé!"
         ]
     },
     "average": { # 5.0 - 6.5
         "prep": [
-            "- Con đã nộp bài tập về nhà nhưng số lượng bài hoàn thành chưa trọn vẹn.",
-            "- Bài tập về nhà còn thiếu một số bài hoặc làm còn sơ sài.",
-            "- Cần rèn luyện thêm tính kỷ luật và dành thời gian nghiêm túc hơn cho BTVN."
+            "- Con đã nộp bài tập về nhà nhưng số lượng bài hoàn thành chưa thật sự trọn vẹn.",
+            "- Bài tập về nhà làm còn sơ sài, một số câu chưa hoàn thành hoặc còn bỏ trống.",
+            "- Cần rèn luyện tính tự giác và dành thời gian nghiêm túc hơn cho bài tập về nhà.",
+            "- Con có nộp bài nhưng cần chú ý nộp đúng hạn và trình bày bài cẩn thận hơn.",
+            "- Ý thức làm bài cần cải thiện, tránh tâm lý làm vội vàng cho xong bài tập.",
+            "- Con cần chủ động hơn trong việc hoàn thành toàn bộ phiếu bài tập được giao.",
+            "- Vở bài tập cần trình bày sạch sẽ, đầy đủ các bước giải chi tiết hơn.",
+            "- Con đã cố gắng làm bài nhưng cần đầu tư thêm thời gian cho việc tự học ở nhà."
         ],
         "comprehension": [
-            "- Con nắm bài ở mức cơ bản, cần củng cố thêm các định nghĩa và phương pháp giải.",
-            "- Kỹ năng tính toán còn dễ nhầm lẫn số, cần tập trung cao độ hơn khi làm bài.",
-            "- Ở những bài toán suy luận logic, con cần suy nghĩ kỹ từng bước."
+            "- Con nắm bài ở mức cơ bản, cần củng cố lại các công thức và quy tắc tính toán.",
+            "- Kỹ năng tính toán còn dễ nhầm lẫn số học, cần tập trung cao độ hơn khi làm bài.",
+            "- Chưa nắm vững phương pháp giải một số dạng bài, cần xem lại các ví dụ chữa trên lớp.",
+            "- Ở những bài toán suy luận, con cần kiên nhẫn đọc kỹ đề bài và tóm tắt cẩn thận.",
+            "- Khả năng tiếp thu có tiến bộ nhưng con còn thiếu tự tin khi tự vận dụng làm bài.",
+            "- Con hiểu được phần lý thuyết cơ bản nhưng khi vào bài tập cụ thể còn lúng túng.",
+            "- Cần chú ý theo dõi bài giảng trên lớp kỹ hơn để nắm chắc phương pháp giải.",
+            "- Thao tác tính toán còn chậm và chưa chuẩn xác, cần rèn luyện phản xạ tính nhẩm."
         ],
-        "advice": [
-            "- Con cần xem lại thật kỹ bài giảng trên lớp và các ví dụ thầy cô đã chữa mẫu.",
-            "- Hãy chủ động hỏi lại thầy cô ngay những phần bài tập con chưa hiểu rõ.",
-            "- Đề nghị phụ huynh đôn đốc con hoàn thành lại những bài chưa đạt yêu cầu."
-        ],
-        "encourage": [
-            "- Đừng nản lòng con nhé, kiên trì tự học từng ngày con sẽ thấy môn Toán thú vị và dễ dàng hơn.",
-            "- Thầy cô tin rằng nếu con tập trung hơn, con sẽ có sự tiến bộ rõ rệt.",
-            "- Cố gắng nhiều hơn ở buổi học tiếp theo con nhé!"
+        "conclusion": [
+            "- Con cần xem lại thật kỹ bài giảng trên lớp và các bài thầy cô đã chữa mẫu vào vở.",
+            "- Đề nghị Quý Phụ huynh cùng đồng hành, nhắc nhở con dành thời gian tự ôn tập tại nhà.",
+            "- Đừng nản lòng con nhé, chỉ cần chăm chỉ và tập trung hơn thì điểm số sẽ cải thiện rõ rệt.",
+            "- Hãy chủ động hỏi lại thầy cô ngay những phần con chưa hiểu để không bị hổng kiến thức.",
+            "- Cố gắng rèn luyện tính kỷ luật và kiên trì từng ngày, thầy cô tin con sẽ tiến bộ!",
+            "- Con hãy quyết tâm hơn ở buổi học tới, thầy cô luôn đồng hành và giúp đỡ con.",
+            "- Dành thêm thời gian làm lại các bài tập đã làm sai để nắm vững cách giải con nhé.",
+            "- Cố gắng lên con nhé, sự kiên trì và chăm chỉ sẽ giúp con đạt kết quả tốt hơn!"
         ]
     },
     "missing": { # < 5.0 hoặc "chưa nộp", "thiếu", "chưa đạt", "0"
         "prep": [
-            "- Con chưa hoàn thành đầy đủ bài tập về nhà theo yêu cầu của thầy cô.",
-            "- Bài tập về nhà chưa nộp đúng hạn hoặc số lượng bài làm quá ít.",
-            "- Ý thức tự giác làm bài tập về nhà tuần này chưa tốt."
+            "- Con chưa hoàn thành đầy đủ bài tập về nhà theo đúng yêu cầu của thầy cô.",
+            "- Bài tập về nhà chưa nộp đúng hạn hoặc số lượng bài làm quá ít, chưa đạt yêu cầu.",
+            "- Ý thức tự giác làm bài tập về nhà tuần này chưa tốt, cần nghiêm túc chấn chỉnh.",
+            "- Con chưa dành thời gian thỏa đáng cho việc chuẩn bị bài và làm BTVN ở nhà.",
+            "- Phiếu bài tập về nhà còn bỏ trống nhiều câu, chưa có sự chuẩn bị bài chu đáo.",
+            "- Con cần rèn luyện tính kỷ luật và nghiêm túc hơn trong việc hoàn thành BTVN."
         ],
         "comprehension": [
             "- Việc không làm BTVN sẽ ảnh hưởng trực tiếp đến khả năng tiếp thu bài mới trên lớp.",
-            "- Con cần nghiêm túc chấn chỉnh lại thái độ học tập và tính tự giác của mình."
+            "- Chưa nắm chắc kiến thức buổi học do chưa chịu khó thực hành luyện tập qua bài tập.",
+            "- Con cần chú ý lắng nghe giảng và ghi chép đầy đủ hơn các bước giải mẫu trên lớp.",
+            "- Hổng một số kiến thức cơ bản do thiếu sự ôn tập và tự rèn luyện tại nhà.",
+            "- Kỹ năng làm toán còn yếu, con cần nhiều thời gian ôn luyện lại từ đầu.",
+            "- Cần tập trung cao độ trong giờ học để nắm được phương pháp giải cơ bản."
         ],
-        "advice": [
-            "- Yêu cầu con hoàn thành bổ sung đầy đủ toàn bộ bài tập về nhà trước buổi học tới.",
-            "- Đề nghị Quý Phụ huynh phối hợp chặt chẽ, nhắc nhở và kiểm tra con làm bài ở nhà.",
-            "- Dành thời gian ôn lại lý thuyết và liên hệ thầy cô để được hướng dẫn bổ sung."
-        ],
-        "encourage": [
-            "- Thầy cô mong con nghiêm túc rút kinh nghiệm để không bị hổng kiến thức quan trọng.",
-            "- Hãy nỗ lực bắt nhịp lại ngay từ buổi học tới con nhé!"
+        "conclusion": [
+            "- Yêu cầu con hoàn thành bù toàn bộ bài tập còn thiếu trước khi bước vào buổi học tới.",
+            "- Kính đề nghị Quý Phụ huynh phối hợp chặt chẽ, kiểm tra và đôn đốc con làm bài ở nhà.",
+            "- Thầy cô mong con nghiêm túc rút kinh nghiệm để bắt nhịp kịp thời với các bạn trong lớp.",
+            "- Hãy nỗ lực cố gắng thay đổi thái độ học tập ngay từ buổi học tiếp theo con nhé!",
+            "- Hãy liên hệ thầy cô để được hỗ trợ kịp thời phần kiến thức con chưa nắm vững.",
+            "- Cố gắng lên con nhé, bắt đầu lại với tinh thần quyết tâm và chăm chỉ hơn!"
         ]
     }
 }
@@ -246,8 +312,17 @@ def parse_score_value(score_str: str) -> Tuple[Optional[float], str]:
             return 0.0, "missing"
         return None, "unknown"
 
-def generate_remark(score_str: str, student_name: str, date_str: str) -> str:
-    """Sinh lời nhận xét chuẩn sư phạm dựa trên điểm BTVN và tên học sinh."""
+def pick_unique_sentence(pool_list: List[str], used_set: set) -> str:
+    """Chọn ngẫu nhiên 1 câu từ kho, ưu tiên các câu chưa xuất hiện trong phiên."""
+    available = [item for item in pool_list if item not in used_set]
+    if not available:
+        available = pool_list
+    chosen = random.choice(available)
+    used_set.add(chosen)
+    return chosen
+
+def generate_remark(score_str: str, student_name: str, date_str: str, session_used_set: Optional[set] = None) -> str:
+    """Sinh lời nhận xét chuẩn sư phạm ĐÚNG 3 GẠCH ĐẦU DÒNG, biến thể ngẫu nhiên không trùng lặp."""
     val, category = parse_score_value(score_str)
     
     if category == "empty" or category == "unknown":
@@ -255,22 +330,20 @@ def generate_remark(score_str: str, student_name: str, date_str: str) -> str:
     
     pool = REMARK_POOLS.get(category, REMARK_POOLS["very_good"])
     
-    seed_str = f"{student_name}_{date_str}_{score_str}"
-    h = int(hashlib.md5(seed_str.encode('utf-8')).hexdigest(), 16)
+    if session_used_set is None:
+        session_used_set = set()
     
-    prep_line = pool["prep"][h % len(pool["prep"])]
-    h //= len(pool["prep"])
+    # ĐÚNG 3 GẠCH ĐẦU DÒNG:
+    # 1. Đánh giá ý thức chuẩn bị / làm BTVN
+    # 2. Đánh giá năng lực hiểu bài & kỹ năng toán học
+    # 3. Lời khuyên cụ thể và lời động viên khích lệ
+    line1 = pick_unique_sentence(pool["prep"], session_used_set)
+    line2 = pick_unique_sentence(pool["comprehension"], session_used_set)
+    line3 = pick_unique_sentence(pool["conclusion"], session_used_set)
     
-    comp_line = pool["comprehension"][h % len(pool["comprehension"])]
-    h //= len(pool["comprehension"])
-    
-    advice_line = pool["advice"][h % len(pool["advice"])]
-    h //= len(pool["advice"])
-    
-    enc_line = pool["encourage"][h % len(pool["encourage"])]
-    
-    lines = [prep_line, comp_line, advice_line, enc_line]
+    lines = [line1, line2, line3]
     return "\n".join(lines)
+
 
 # ==================== PHÂN TÍCH VÀ CẬP NHẬT GOOGLE SHEET ====================
 
@@ -704,6 +777,7 @@ def main():
         return
 
     tasks = []
+    session_used_sentences = set()
     for s in students_with_scores:
         current_nx = s["current_nhan_xet"].strip()
         has_teacher_remark = bool(current_nx)
@@ -715,9 +789,10 @@ def main():
             needs_update = False
             is_newly_generated = False
         else:
-            final_nx = generate_remark(s["btvn"], s["name"], target_date)
+            final_nx = generate_remark(s["btvn"], s["name"], target_date, session_used_sentences)
             needs_update = True
             is_newly_generated = True
+
 
         tasks.append({
             "student": s,
