@@ -12,6 +12,15 @@ Hỗ trợ gửi email KHÔNG CẦN MẬT KHẨU:
 
 import os
 import sys
+
+# Đảm bảo in tiếng Việt chuẩn trên Windows console
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 import re
 import json
 import base64
@@ -22,6 +31,7 @@ import subprocess
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Dict, Any, Optional, Tuple
+
 
 import gspread
 from google.oauth2.service_account import Credentials
