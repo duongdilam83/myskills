@@ -6,14 +6,9 @@ Kho lưu trữ các kỹ năng (Agent Skills) tự động hóa phục vụ côn
 
 ## Danh mục kỹ năng
 
-### 1. [Google Sheets Teacher Feedback Generator](./google-sheets-teacher-feedback/)
-- **Mã kỹ năng:** `google-sheets-teacher-feedback`
-- **Mô tả:** Tự động kết nối Google Sheets bằng Service Account (PowerShell/.NET), đọc điểm số BTVN của học sinh, tự động sinh nhận xét sư phạm ngẫu nhiên 3–6 gạch đầu dòng theo tiêu chuẩn giáo viên, ghi trực tiếp vào Google Sheets, định dạng Wrap Text, Auto Row Height và tự động gửi email thông báo kết quả học tập cho phụ huynh (nếu có cột Email phụ huynh).
-- **Tài liệu chi tiết:** [Xem SKILL.md](./google-sheets-teacher-feedback/SKILL.md)
-
-### 2. [MathPlus Academy: Nhận Xét BTVN & Gửi Email Phụ Huynh](./mathplus-nhan-xet-gui-mail/)
+### 1. [MathPlus Academy: Nhận Xét BTVN & Gửi Email Phụ Huynh](./mathplus-nhan-xet-gui-mail/)
 - **Mã kỹ năng:** `mathplus-nhan-xet-gui-mail`
-- **Mô tả:** Chuyên biệt hóa cho Trung tâm Giáo dục MathPlus Academy bằng Python (`gspread`). Đọc bảng điểm Google Sheets theo khối lớp (`Lớp 2`, `Lớp 3`, `Lớp 4`, `Lớp 5`) và ngày học, tự động phân tích Điểm BTVN để sinh nhận xét sư phạm 4 gạch đầu dòng, ghi vào cột "Điểm trên lớp + Nhận xét", tạo bản xem trước HTML, và gửi email thông báo kết quả phụ huynh với chốt chặn an toàn (bắt buộc người dùng phê duyệt trước khi gửi). Hỗ trợ Outlook Windows, macOS Mail, Google Workspace Service Account và SMTP.
+- **Mô tả:** Chuyên biệt hóa cho Trung tâm Giáo dục MathPlus Academy bằng Python (`gspread`). Đọc bảng điểm Google Sheets theo khối lớp (`Lớp 2`, `Lớp 3`, `Lớp 4`, `Lớp 5`) và ngày học, tự động phân tích Điểm BTVN để sinh nhận xét sư phạm đúng 3 gạch đầu dòng linh hoạt (bảo toàn nhận xét đã có của thầy cô), ghi vào cột "Điểm trên lớp + Nhận xét", tạo bản xem trước HTML, và gửi email thông báo kết quả phụ huynh với chốt chặn an toàn (bắt buộc người dùng phê duyệt trước khi gửi). Hỗ trợ Outlook Windows, macOS Mail, Google Workspace Service Account và SMTP.
 - **Tài liệu chi tiết:** [Xem SKILL.md](./mathplus-nhan-xet-gui-mail/SKILL.md)
 
 
