@@ -1,6 +1,6 @@
 ---
 name: mathplus-nhan-xet-gui-mail
-description: "Tự động đọc bảng điểm học sinh MathPlus trên Google Sheets, dựa theo cột 'Điểm BTVN' để sinh nhận xét sư phạm chuẩn mực vào cột 'Điểm trên lớp + Nhận xét', cập nhật Google Sheets và soạn/gửi email thông báo kết quả học tập cho phụ huynh (BẮT BUỘC Human can thiệp phê duyệt trước khi gửi email)."
+description: "Tự động đọc bảng điểm học sinh MathPlus trên Google Sheets, dựa theo cột 'Điểm BTVN' để sinh nhận xét sư phạm vào cột 'Điểm trên lớp + Nhận xét' (tự động giữ nguyên nếu đã có sẵn nhận xét của thầy cô, không tạo lại), cập nhật Google Sheets và soạn/gửi email thông báo kết quả học tập cho phụ huynh (BẮT BUỘC Human can thiệp phê duyệt trước khi gửi email)."
 ---
 
 # MathPlus: Nhận Xét BTVN & Gửi Email Phụ Huynh
@@ -8,13 +8,16 @@ description: "Tự động đọc bảng điểm học sinh MathPlus trên Googl
 ## Tổng quan
 Skill này tự động hóa quy trình quản lý chất lượng học tập tại **Trung tâm Giáo dục MathPlus Academy**:
 1. **Đọc bảng điểm Google Sheets**: Hỗ trợ link Google Sheets có chứa `gid` hoặc chỉ định sheet cụ thể (ví dụ: `Tháng 09/2026`). Tự động nhận diện phân khối các lớp (`Lớp 2`, `Lớp 3`, `Lớp 4`, `Lớp 5`) và các buổi học theo ngày (`05/09`, `12/09`, `19/09`, `26/09`...).
-2. **Sinh nhận xét sư phạm theo Điểm BTVN**: Tùy theo thang điểm BTVN của từng học sinh (Xuất sắc >=9.5, Giỏi 8.0-9.0, Khá 7.0-7.5, Trung bình 5.0-6.5, hoặc Chưa nộp/0/thiếu), tự động sinh nhận xét gồm 4-5 gạch đầu dòng chuẩn mực sư phạm (ý thức chuẩn bị bài, năng lực tiếp thu, điểm cần cải thiện và lời động viên).
-3. **Cập nhật Google Sheet**: Ghi nhận xét trực tiếp vào đúng hàng và cột `"Điểm trên lớp + Nhận xét"` của ngày học tương ứng qua Google Sheets API (`gspread`).
-4. **Soạn thảo email thông báo phụ huynh**: Sử dụng template HTML chuyên nghiệp mang nhận diện thương hiệu MathPlus Academy (xanh lá `#2e5311`, logo, bảng điểm, nhận xét chi tiết, lời nhắn gửi từ trung tâm).
+2. **Sinh nhận xét sư phạm theo Điểm BTVN**:
+   - **Bảo toàn nhận xét của thầy cô**: Nếu ô `"Điểm trên lớp + Nhận xét"` đã có sẵn nhận xét của thầy/cô, hệ thống **tự động giữ nguyên và không tạo nhận xét cho dòng đó nữa** (bỏ qua bước sinh mới, trừ khi truyền cờ `--overwrite`).
+   - **Tạo mới với các ô còn trống**: Dựa vào thang điểm BTVN (Xuất sắc >=9.5, Giỏi 8.0-9.0, Khá 7.0-7.5, Trung bình 5.0-6.5, hoặc Chưa nộp/0/thiếu), tự động sinh nhận xét gồm 4 gạch đầu dòng chuẩn mực sư phạm (ý thức chuẩn bị bài, năng lực tiếp thu, điểm cần cải thiện và lời động viên).
+3. **Cập nhật Google Sheet**: Chỉ ghi nhận xét mới vào đúng hàng và cột `"Điểm trên lớp + Nhận xét"` của các học sinh chưa có nhận xét (không đè lên nhận xét sẵn có của giáo viên).
+4. **Soạn thảo email thông báo phụ huynh**: Sử dụng template HTML chuyên nghiệp mang nhận diện thương hiệu MathPlus Academy (xanh lá `#2e5311`, logo, bảng điểm, nhận xét chi tiết gồm cả nhận xét viết tay của thầy cô hoặc nhận xét sinh tự động, lời nhắn gửi từ trung tâm).
 5. ⚠️ **CHỐT CHẶN BẮT BUỘC (Human-in-the-loop)**:
    - **Tuyệt đối KHÔNG ĐƯỢC PHÉP tự động gửi email** mà không có xác nhận từ người dùng.
    - Script và Agent **phải dừng lại**, hiển thị bảng preview chi tiết (Học sinh, Lớp, Điểm, Nhận xét, Email nhận) và **yêu cầu người dùng duyệt/xác nhận**.
    - Chỉ khi người dùng phản hồi đồng ý ("Gửi", "OK", "Xác nhận"), Agent mới thực thi lệnh gửi với cờ `--confirm`.
+
 
 ---
 

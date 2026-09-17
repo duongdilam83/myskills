@@ -705,19 +705,34 @@ def main():
 
     tasks = []
     for s in students_with_scores:
-        current_nx = s["current_nhan_xet"]
-        needs_update = args.overwrite or (not current_nx.strip())
-        generated_nx = generate_remark(s["btvn"], s["name"], target_date)
+        current_nx = s["current_nhan_xet"].strip()
+        has_teacher_remark = bool(current_nx)
         
-        final_nx = generated_nx if needs_update else current_nx
+        # Nếu cột "Điểm trên lớp + Nhận xét" đã có nhận xét của thầy cô rồi:
+        # Giữ nguyên nhận xét đó, KHÔNG sinh nhận xét mới (trừ khi có cờ --overwrite)
+        if has_teacher_remark and not args.overwrite:
+            final_nx = current_nx
+            needs_update = False
+            is_newly_generated = False
+        else:
+            final_nx = generate_remark(s["btvn"], s["name"], target_date)
+            needs_update = True
+            is_newly_generated = True
+
         tasks.append({
             "student": s,
             "score": s["btvn"],
             "needs_sheet_update": needs_update,
+            "has_teacher_remark": has_teacher_remark,
+            "is_newly_generated": is_newly_generated,
             "remark": final_nx,
             "has_email": bool(s["email"].strip() and "@" in s["email"]),
             "email": s["email"].strip()
         })
+
+    newly_gen_count = sum(1 for t in tasks if t["is_newly_generated"])
+    existing_count = sum(1 for t in tasks if not t["is_newly_generated"])
+    print(f"[*] Thống kê nhận xét: {newly_gen_count} học sinh cần tạo nhận xét mới | {existing_count} học sinh đã có sẵn nhận xét của thầy cô (giữ nguyên, bỏ qua tạo mới).")
 
     # ==================== HIỂN THỊ PREVIEW ====================
 
@@ -727,7 +742,10 @@ def main():
     for i, t in enumerate(tasks, 1):
         st = t["student"]
         email_status = f"✅ {t['email']}" if t['has_email'] else "❌ Chưa có email"
-        update_status = "Sẽ cập nhật" if t['needs_sheet_update'] else "Giữ nguyên nhận xét cũ"
+        if t["is_newly_generated"]:
+            update_status = "✨ Tạo nhận xét mới (sẽ ghi vào Sheet)"
+        else:
+            update_status = "📌 Đã có nhận xét của thầy cô trên Sheet (giữ nguyên, không tạo lại)"
         print(f"\n{i}. [{st['class_name']}] {st['name']} (Hàng {st['row_number']})")
         print(f"   - Điểm BTVN: {t['score']}")
         print(f"   - Email PH:  {email_status}")
@@ -736,6 +754,7 @@ def main():
         for line in t['remark'].split("\n"):
             print(f"     {line}")
     print("\n" + "="*80)
+
 
     if args.export_preview:
         html_cards = []
@@ -758,7 +777,7 @@ def main():
         print(f"\n[*] Đang tiến hành cập nhật nhận xét vào Google Sheet...")
         updates_to_make = [t for t in tasks if t["needs_sheet_update"]]
         if not updates_to_make:
-            print("[i] Tất cả các ô nhận xét đã có dữ liệu (dùng --overwrite nếu muốn ghi đè).")
+            print("[i] Tất cả các ô nhận xét đã có sẵn nhận xét của thầy cô trên Google Sheet (không có dòng nào cần cập nhật).")
         else:
             cells_to_update = []
             for t in updates_to_make:
@@ -767,7 +786,8 @@ def main():
                 cells_to_update.append(gspread.Cell(row=row_idx, col=col_idx, value=t["remark"]))
                 
             worksheet.update_cells(cells_to_update)
-            print(f"[✅] Đã cập nhật thành công {len(cells_to_update)} nhận xét vào cột 'Điểm trên lớp + Nhận xét' trên Google Sheet!")
+            print(f"[✅] Đã cập nhật thành công {len(cells_to_update)} nhận xét mới vào cột 'Điểm trên lớp + Nhận xét' trên Google Sheet (giữ nguyên các ô đã có nhận xét sẵn)!")
+
 
     # ==================== GỬI EMAIL PHỤ HUYNH ====================
 
