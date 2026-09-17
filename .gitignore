@@ -8,7 +8,13 @@ email_config.json
 *email*.json
 !*example*.json
 *secret*
+config.json
+*.env
 
 # Temporary files
 scratch/
 *.log
+__pycache__/
+*.pyc
+.DS_Store
+

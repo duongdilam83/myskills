@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông báo kết quả học tập - MathPlus Academy</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 620px;
+      margin: 24px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e1ebe1;
+    }
+    .header {
+      background: linear-gradient(135deg, #2e5311 0%, #46791e 100%);
+      color: #ffffff;
+      padding: 30px 24px 26px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      color: #dcedc8;
+      font-weight: 500;
+    }
+    .content {
+      padding: 28px 24px;
+    }
+    .greeting {
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+    .student-badge {
+      background: #f8faf8;
+      border: 1px solid #dbead7;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 22px;
+    }
+    .student-badge table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .student-badge td {
+      padding: 6px 0;
+      font-size: 15px;
+    }
+    .student-badge td.label {
+      color: #666;
+      width: 35%;
+      font-weight: 500;
+    }
+    .student-badge td.val {
+      font-weight: 700;
+      color: #2e5311;
+    }
+    .score-box {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2e5311;
+      margin: 24px 0 12px;
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #e2f0d9;
+      padding-bottom: 6px;
+    }
+    .remarks-box {
+      background: #fafdf8;
+      border-left: 4px solid #64b428;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 10px 0 20px;
+      font-size: 14.5px;
+    }
+    .remarks-box ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .remarks-box li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .remarks-box li:last-child {
+      margin-bottom: 0;
+    }
+    .message-note {
+      font-style: italic;
+      color: #555;
+      font-size: 14px;
+      background: #fffdf5;
+      border: 1px solid #f6ecce;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 20px;
+    }
+    .footer {
+      background: #233b11;
+      color: #c9dfbf;
+      padding: 24px;
+      font-size: 12.5px;
+      text-align: center;
+      line-height: 1.7;
+    }
+    .footer a {
+      color: #8ed35a;
+      text-decoration: none;
+    }
+    .footer p {
+      margin: 4px 0;
+    }
+    .brand-tag {
+      font-weight: 700;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Trung tâm Giáo dục MathPlus Academy</h1>
+      <p>Hệ Thống Đào Tạo Toán Năng Khiếu & Chất Lượng Cao</p>
+    </div>
+
+    <div class="content">
+      <div class="greeting">
+        Kính gửi Quý Phụ huynh học sinh <strong>{{student_name}}</strong>,
+      </div>
+      <p style="margin-top: 0; font-size: 14.5px;">
+        MathPlus Academy xin trân trọng gửi tới Quý Phụ huynh thông tin kết quả học tập và nhận xét chi tiết buổi học môn Toán ngày <strong>{{session_date}}</strong>:
+      </p>
+
+      <div class="student-badge">
+        <table>
+          <tr>
+            <td class="label">Học sinh:</td>
+            <td class="val">{{student_name}}</td>
+          </tr>
+          <tr>
+            <td class="label">Lớp học:</td>
+            <td class="val">{{class_name}}</td>
+          </tr>
+          <tr>
+            <td class="label">Ngày học:</td>
+            <td class="val">{{session_date}}</td>
+          </tr>
+          <tr>
+            <td class="label">Điểm BTVN:</td>
+            <td class="val">
+              <span class="score-box">{{btvn_score}}</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section-title">
+        📝 Nhận xét chi tiết từ Thầy/Cô phụ trách:
+      </div>
+      <div class="remarks-box">
+        {{remarks_html}}
+      </div>
+
+      <div class="message-note">
+        💡 <strong>Lời nhắn gửi từ Thầy/Cô MathPlus:</strong> Mỗi bước tiến bộ của con dù nhỏ đều là kết quả của sự nỗ lực và tự giác rèn luyện. Thầy cô mong Quý Phụ huynh tiếp tục đồng hành, động viên con giữ vững niềm đam mê và thói quen tự học toán mỗi ngày!
+      </div>
+
+      <p style="margin-top: 24px; font-size: 14px; color: #444;">
+        Nếu Quý Phụ huynh có bất kỳ thắc mắc hoặc cần trao đổi thêm về tình hình học tập của con, xin vui lòng phản hồi email này hoặc liên hệ trực tiếp với bộ phận Chăm sóc học viên của MathPlus.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p class="brand-tag">TRUNG TÂM GIÁO DỤC MATHPLUS ACADEMY</p>
+      <p>📍 Cơ sở 1: MathPlus Xã Đàn | Cơ sở 2: MathPlus Hồ Đắc Di, Hà Nội</p>
+      <p>🌐 Website: <a href="https://mathplus.com.vn">mathplus.com.vn</a> | ✉️ Email: <a href="mailto:cskh@mathplus.vn">cskh@mathplus.vn</a></p>
+      <p>© MathPlus Academy. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

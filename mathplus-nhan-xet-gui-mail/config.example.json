@@ -1,0 +1,7 @@
+{
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "sender_email": "cskh@mathplus.vn",
+  "sender_password": "your-16-char-app-password",
+  "sender_name": "Trung tâm giáo dục MathPlus Academy"
+}
