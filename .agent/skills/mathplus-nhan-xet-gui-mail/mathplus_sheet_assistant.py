@@ -362,7 +362,7 @@ def analyze_sheet_data(worksheet_data: List[List[str]]) -> Dict[str, Any]:
             date_cols = {}
             for c_idx, cell in enumerate(row):
                 c_val = cell.strip()
-                if re.match(r'^\d{1,2}/\d{1,2}$', c_val):
+                if re.match(r'^\d{1,2}/\d{1,2}(?:/\d{2,4})?$', c_val):
                     date_cols[c_val] = c_idx
                     
             current_class = {
@@ -387,6 +387,8 @@ def analyze_sheet_data(worksheet_data: List[List[str]]) -> Dict[str, Any]:
         if current_class and first_cell.isdigit():
             stt = first_cell
             name = row[1].strip() if len(row) > 1 else ""
+            if not name:
+                continue
             phone = row[2].strip() if len(row) > 2 else ""
             email = row[3].strip() if len(row) > 3 else ""
             
@@ -756,7 +758,24 @@ def main():
         sys.exit(1)
 
     target_date = args.date
-    if not target_date:
+    if target_date:
+        matched_date = None
+        for d in all_dates:
+            if d == target_date:
+                matched_date = d
+                break
+            d_parts = d.split("/")
+            t_parts = target_date.split("/")
+            if len(d_parts) >= 2 and len(t_parts) >= 2:
+                if d_parts[0].zfill(2) == t_parts[0].zfill(2) and d_parts[1].zfill(2) == t_parts[1].zfill(2):
+                    matched_date = d
+                    break
+        if matched_date:
+            target_date = matched_date
+        else:
+            print(f"[!] Không tìm thấy ngày '{target_date}' trong sheet. Các ngày có trong sheet: {', '.join(all_dates)}", file=sys.stderr)
+            sys.exit(1)
+    else:
         for d in reversed(all_dates):
             stus = get_students_for_session(parsed_data, d)
             if any(s["btvn"].strip() for s in stus):
